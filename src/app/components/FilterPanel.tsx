@@ -1,20 +1,34 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaArrowLeft, FaSearch } from "react-icons/fa";
 
 interface FilterControlsProps {
   onSearchChange?: (term: string) => void;
+  onFilterChange?: (filters: {
+    duration: number;
+    budget: number;
+    age: number;
+    languages: string[];
+  }) => void;
+  onClear?: () => void;
 }
 
-export default function FilterControls({ onSearchChange }: FilterControlsProps) {
+export default function FilterControls({
+  onSearchChange,
+  onFilterChange,
+  onClear,
+}: FilterControlsProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [languages, setLanguages] = useState<string[]>([]);
   const [langInput, setLangInput] = useState("");
-
-  // Slider states
   const [duration, setDuration] = useState<number>(0);
   const [budget, setBudget] = useState<number>(0);
   const [age, setAge] = useState<number>(12);
+
+  // send updated filters to parent whenever they change
+  useEffect(() => {
+    onFilterChange?.({ duration, budget, age, languages });
+  }, [duration, budget, age, languages]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -23,14 +37,26 @@ export default function FilterControls({ onSearchChange }: FilterControlsProps) 
   };
 
   const addLanguage = () => {
-    if (langInput.trim() && !languages.includes(langInput)) {
-      setLanguages([...languages, langInput]);
+    if (langInput.trim() && !languages.includes(langInput.trim())) {
+      const updated = [...languages, langInput.trim()];
+      setLanguages(updated);
       setLangInput("");
     }
   };
 
   const removeLanguage = (lang: string) => {
-    setLanguages(languages.filter((l) => l !== lang));
+    const updated = languages.filter((l) => l !== lang);
+    setLanguages(updated);
+  };
+
+  const handleClearAll = () => {
+    setSearchTerm("");
+    setLanguages([]);
+    setLangInput("");
+    setDuration(0);
+    setBudget(0);
+    setAge(12);
+    onClear?.();
   };
 
   const dropdownFilters = [
@@ -72,20 +98,16 @@ export default function FilterControls({ onSearchChange }: FilterControlsProps) 
             stroke="currentColor"
             className="w-5 h-5"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3 6h18M3 12h18M3 18h18m-5-12v2m-8 4v2m8 4v2" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M3 6h18M3 12h18M3 18h18m-5-12v2m-8 4v2m8 4v2"
+            />
           </svg>
           <span className="text-sm font-medium">Filter</span>
         </div>
         <button
-          onClick={() => {
-            // clear filters (reset sliders + languages + search)
-            setSearchTerm("");
-            setLanguages([]);
-            setLangInput("");
-            setDuration(0);
-            setBudget(0);
-            setAge(12);
-          }}
+          onClick={handleClearAll}
           className="text-[#F76C6C] text-sm font-medium hover:underline"
         >
           Clear All
@@ -99,21 +121,17 @@ export default function FilterControls({ onSearchChange }: FilterControlsProps) 
             key={label}
             className="border border-[#F76C6C] text-[#F76C6C] px-3 py-1.5 rounded-sm text-xs hover:bg-[#F76C6C]/10 transition flex items-center gap-1"
           >
-             {label}
+            {label}
           </button>
         ))}
       </div>
 
-      {/* Scrollable Filters Section (hidden scrollbars) */}
+      {/* Scrollable Filters */}
       <div
         className="flex-1 overflow-x-auto overflow-y-auto pr-2 space-y-4"
-        style={{
-          scrollbarWidth: "none",
-          msOverflowStyle: "none",
-        }}
+        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
         <style jsx>{`
-          /* hide scrollbars for the container only */
           div::-webkit-scrollbar {
             display: none;
           }
@@ -173,19 +191,16 @@ export default function FilterControls({ onSearchChange }: FilterControlsProps) 
 
         {/* Sliders */}
         <div className="space-y-6 mt-4">
-          {[
+          {[ 
             { label: "Duration (0–50+ days)", min: 0, max: 50, suffix: "days", key: "duration" },
             { label: "Budget (0–50K)", min: 0, max: 50, suffix: "K", key: "budget" },
             { label: "Age Range (12–50+)", min: 12, max: 50, suffix: "yrs", key: "age" },
           ].map((slider) => {
-            // compute current value strictly as number (avoids boolean/undefined)
             const currentValue =
               slider.key === "duration" ? duration : slider.key === "budget" ? budget : age;
-
             return (
               <div key={slider.key} className="space-y-2">
                 <label className="text-sm font-medium text-gray-800">{slider.label}</label>
-
                 <input
                   type="range"
                   min={slider.min}
@@ -200,27 +215,21 @@ export default function FilterControls({ onSearchChange }: FilterControlsProps) 
                   className="w-full accent-[#F76C6C]"
                   style={{ accentColor: "#F76C6C" }}
                 />
-
-                {/* Dynamic value below slider */}
                 <div className="text-sm text-gray-600 font-medium">
                   {slider.key === "duration" && `${duration} ${slider.suffix}`}
                   {slider.key === "budget" && `${budget}${slider.suffix}`}
                   {slider.key === "age" && `${age} ${slider.suffix}`}
                 </div>
-
-                {/* Horizontal line separator */}
                 <hr className="border-gray-200" />
               </div>
             );
           })}
         </div>
 
-        {/* Spacer so fixed bottom bar doesn't overlap content */}
         <div style={{ height: 80 }} />
-
       </div>
 
-      {/* Fixed Apply Button at bottom */}
+      {/* Apply Filters */}
       <div className="absolute left-0 right-0 bottom-0 p-4 bg-white border-t border-gray-200">
         <button className="w-full bg-[#F76C6C] text-white py-2 rounded-sm font-semibold hover:bg-[#e45d5d] transition">
           Apply Filters

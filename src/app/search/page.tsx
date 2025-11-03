@@ -1,22 +1,37 @@
 "use client";
 import React, { useState } from "react";
-import FilterControls from "../components/FilterPanel";
-import RightContent from "../components/RightContent";
+import FilterControls from "../../app/components/FilterPanel";
+import RightContent from "../../app/components/RightContent";
 
-export default function SearchPage() {
+export default function ExplorePage() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [filters, setFilters] = useState({
+    duration: 0,
+    budget: 0,
+    age: 12,
+    languages: [] as string[],
+  });
+
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setFilters({ duration: 0, budget: 0, age: 12, languages: [] });
+  };
 
   return (
-    <main className="flex h-screen bg-white">
-      {/* Left Sidebar */}
-      <aside className="w-72 bg-white flex flex-col p-4">
-        <FilterControls onSearchChange={setSearchTerm} />
-      </aside>
+    <div className="flex h-screen">
+      {/* Left filter panel: fixed width, full height, no scroll */}
+      <div className="w-80 h-full flex-shrink-0">
+        <FilterControls
+          onSearchChange={setSearchTerm}
+          onFilterChange={setFilters}
+          onClear={handleClearFilters}
+        />
+      </div>
 
-      {/* Right Main Content */}
-      <section className="flex-1 overflow-y-auto p-6">
-        <RightContent searchTerm={searchTerm} />
-      </section>
-    </main>
+      {/* Right content: scrollable vertically */}
+      <div className="flex-1 h-full overflow-y-auto">
+        <RightContent searchTerm={searchTerm} filters={filters} />
+      </div>
+    </div>
   );
 }

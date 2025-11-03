@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { ShieldCheckIcon } from "@heroicons/react/24/outline";
+import { CheckBadgeIcon, ShieldCheckIcon } from "@heroicons/react/16/solid";
 import {
   FaCalendarAlt,
   FaMoneyBillWave,
@@ -15,6 +15,7 @@ import {
   FaShieldVirus,
   FaUserShield,
   FaCheck,
+  FaSuitcase,
 } from "react-icons/fa";
 import { FaShieldHalved } from "react-icons/fa6";
 
@@ -67,8 +68,8 @@ export default function TripCard({
 <div className="absolute bottom-3 left-3 right-3 text-white text-sm">
   <h3 className="font-semibold text-[20px] leading-tight flex items-center gap-1">
   {name}, {age}
-  <span className="flex items-center justify-center w-4 h-4 bg-green-500 rounded-full">
-    <FaCheck className="text-white text-[8px]" />
+  <span className="flex items-center justify-center w-4 h-4 ">
+    <CheckBadgeIcon className="text-green-500 text-[8px]" />
   </span>
 </h3>
 
@@ -81,14 +82,14 @@ export default function TripCard({
 
     <div className="flex items-center gap-2">
       {/* Rating */}
-      <div className="flex items-center bg-white/20 backdrop-blur-md px-1.5 py-[1px] rounded-md">
+      <div className="flex items-center bg-white backdrop-blur-md px-1.5 py-[1px] rounded-md">
         <FaStar className="text-yellow-400 w-3 h-3 mr-1" />
-        <span>{rating.toFixed(1)}</span>
+        <span className="text-black">{rating.toFixed(1)}</span>
       </div>
 
       {/* Match Badge */}
       <div className="flex items-center bg-green-500/80 px-1.5 py-[1px] rounded-md">
-        <FaShieldHalved className="w-3 h-3 mr-1" />
+        <ShieldCheckIcon className="w-3 h-3 mr-1" />
         <span>{matchPercent}%</span>
       </div>
     </div>
@@ -131,7 +132,7 @@ export default function TripCard({
           {interests.map((tag) => (
             <span
               key={tag}
-              className="bg-[#EB5757]/10 text-[#EB5757] text-[10px] px-2 py-[2px] rounded-md border border-[#F76C6C]/30"
+              className="bg-[#EB5757]/10 text-[#EB5757] text-[10px] px-2 py-[2px] rounded-lg border border-[#F76C6C]/30"
             >
               {tag}
             </span>
@@ -144,7 +145,7 @@ export default function TripCard({
             <FaEye className="text-[11px]" /> Profile
           </button>
           <button className="flex items-center justify-center gap-1 border border-[#EB5757] text-[#EB5757] px-2 py-1 rounded-sm text-[10px] font-medium hover:bg-[#EB5757]/10 transition w-1/2">
-            <FaGlobe className="text-[11px]" /> Trip
+            <FaSuitcase className="text-[11px]" /> Trip
           </button>
         </div>
 

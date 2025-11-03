@@ -96,7 +96,7 @@ export default function AgencyCard({
           {badges.map((badge) => (
             <span
               key={badge}
-              className="bg-[#EB5757]/10 text-[#EB5757] text-[10px] px-2 py-[2px] rounded-md border border-[#EB5757]/30"
+              className="bg-[#EB5757]/10 text-[#EB5757] text-[10px] px-2 py-[2px] rounded-lg border border-[#EB5757]/30"
             >
               {badge}
             </span>
@@ -108,7 +108,7 @@ export default function AgencyCard({
           <button className="flex-1 bg-[#F76C6C] text-white text-[11px] font-semibold py-1.5 rounded-sm hover:bg-[#e45d5d] transition flex items-center justify-center gap-1">
             View Profile
           </button>
-          <button className="px-3 py-1.5 text-[#F76C6C] border border-[#F76C6C] rounded-md text-[10px] font-medium hover:bg-[#F76C6C]/10 transition flex items-center justify-center gap-1">
+          <button className="px-3 py-1.5 text-[#F76C6C] border border-[#F76C6C] rounded-sm text-[10px] font-medium hover:bg-[#F76C6C]/10 transition flex items-center justify-center gap-1">
             2 Trips
           </button>
         </div>

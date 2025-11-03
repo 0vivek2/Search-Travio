@@ -1,6 +1,4 @@
 "use client";
-import React from "react";
-import { Trip } from "../../../.next/types/trip";
 
 function TripCard({
   creatorName,
