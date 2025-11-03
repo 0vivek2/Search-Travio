@@ -4,6 +4,23 @@ import TripCard from "./TripCard";
 import AgencyCard from "./AgencyCard";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
+interface Trip {
+  id: number;
+  name: string;
+  age: number;
+  location: string;
+  image: string;
+  matchPercent: number;
+  rating: number;
+  from: string;
+  to: string;
+  dateRange: string;
+  budget: number; // use number for filtering
+  duration: number; // number of days
+  interests: string[];
+  languages: string[];
+}
+
 interface RightContentProps {
   searchTerm: string;
   filters: {
@@ -15,7 +32,7 @@ interface RightContentProps {
 }
 
 export default function RightContent({ searchTerm, filters }: RightContentProps) {
-  const mockTrips = [
+  const mockTrips: Trip[] = [
     {
       id: 1,
       name: "Sophia",
@@ -27,9 +44,10 @@ export default function RightContent({ searchTerm, filters }: RightContentProps)
       from: "Paris",
       to: "Santorini",
       dateRange: "Dec 10 - Dec 22",
-      budget: "15K-50K",
+      budget: 40,
+      duration: 12,
       interests: ["Beach", "Romance", "Photography"],
-      durationDays: 12,
+      languages: ["English", "French"],
     },
     {
       id: 2,
@@ -42,9 +60,10 @@ export default function RightContent({ searchTerm, filters }: RightContentProps)
       from: "Bali",
       to: "Maldives",
       dateRange: "Jan 3 - Jan 14",
-      budget: "25K-45K",
+      budget: 35,
+      duration: 11,
       interests: ["Nature", "Adventure", "Culture"],
-      durationDays: 10,
+      languages: ["English", "Indonesian"],
     },
     {
       id: 3,
@@ -57,9 +76,10 @@ export default function RightContent({ searchTerm, filters }: RightContentProps)
       from: "Goa",
       to: "Thailand",
       dateRange: "Feb 1 - Feb 10",
-      budget: "20K-40K",
+      budget: 30,
+      duration: 10,
       interests: ["Beach", "Adventure", "Music"],
-      durationDays: 8,
+      languages: ["English", "Hindi"],
     },
   ];
 
@@ -68,88 +88,130 @@ export default function RightContent({ searchTerm, filters }: RightContentProps)
     image: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4",
     rating: 4.8,
     tag: "Moderate",
-    about: "We curate unforgettable journeys tailored for explorers who value authenticity and comfort.",
+    about:
+      "We curate unforgettable journeys tailored for explorers who value authenticity and comfort.",
     trips: 120,
     travelers: 4800,
     years: 8,
     badges: ["Adventure Travel", "Cultural Tours", "Sustainable Tours"],
   };
 
+  // ✅ Refs for carousel
   const ref1 = useRef<HTMLDivElement | null>(null);
   const ref2 = useRef<HTMLDivElement | null>(null);
   const ref3 = useRef<HTMLDivElement | null>(null);
 
-  const handleScroll = (ref: React.RefObject<HTMLDivElement | null>, direction: "left" | "right") => {
+  const handleScroll = (
+    ref: React.RefObject<HTMLDivElement | null>,
+    direction: "left" | "right"
+  ) => {
     if (!ref.current) return;
     const amount = direction === "left" ? -300 : 300;
     ref.current.scrollBy({ left: amount, behavior: "smooth" });
   };
 
-  // --- FILTER LOGIC ---
-  const filteredTrips = mockTrips.filter((trip) => {
-    const durationMatch = filters.duration === 0 || (trip.durationDays && trip.durationDays <= filters.duration);
-    const budgetNumbers = trip.budget.split("-").map(Number);
-    const budgetMatch = filters.budget === 0 || (budgetNumbers[1] <= filters.budget);
-    const ageMatch = trip.age >= filters.age;
-    const languageMatch = filters.languages.length === 0 || filters.languages.some((lang) => trip.interests.includes(lang));
-
-    return durationMatch && budgetMatch && ageMatch && languageMatch;
-  });
-
-  // --- Split filtered trips for different sections ---
-  const bestMatchTrips = [...filteredTrips].sort((a, b) => b.matchPercent - a.matchPercent);
-  const featuredLeadersTrips = [...filteredTrips].sort((a, b) => b.rating - a.rating);
-  const aiRecommendationsTrips = [...filteredTrips].sort(() => 0.5 - Math.random());
-
-  const Carousel = ({ title, refObj, children }: { title: string; refObj: React.RefObject<HTMLDivElement | null>; children: React.ReactNode }) => (
+  const Carousel = ({
+    title,
+    refObj,
+    children,
+  }: {
+    title: string;
+    refObj: React.RefObject<HTMLDivElement | null>;
+    children: React.ReactNode;
+  }) => (
     <section className="relative">
       <h3 className="text-lg font-semibold text-gray-700 mb-3 ml-8">{title}</h3>
       <div className="relative">
-        <button onClick={() => handleScroll(refObj, "left")} className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-white shadow-md hover:bg-[#F76C6C]/10 transition">
+        <button
+          onClick={() => handleScroll(refObj, "left")}
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-white shadow-md hover:bg-[#F76C6C]/10 transition"
+        >
           <FaChevronLeft className="text-black w-4 h-4" />
         </button>
 
-        <div ref={refObj} className="flex gap-4 overflow-x-auto scroll-smooth px-8" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
-          <style jsx>{`div::-webkit-scrollbar { display: none; }`}</style>
+        <div
+          ref={refObj}
+          className="flex gap-4 overflow-x-auto scroll-smooth px-8"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        >
+          <style jsx>{`
+            div::-webkit-scrollbar {
+              display: none;
+            }
+          `}</style>
           {children}
         </div>
 
-        <button onClick={() => handleScroll(refObj, "right")} className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-white shadow-md hover:bg-[#F76C6C]/10 transition">
+        <button
+          onClick={() => handleScroll(refObj, "right")}
+          className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-white shadow-md hover:bg-[#F76C6C]/10 transition"
+        >
           <FaChevronRight className="text-black w-4 h-4" />
         </button>
       </div>
     </section>
   );
 
+  // ✅ Apply filters to trips
+  const filteredTrips = mockTrips.filter((trip) => {
+    const matchesSearch =
+      searchTerm === "" || trip.from.toLowerCase().includes(searchTerm.toLowerCase()) || trip.to.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesBudget = trip.budget <= filters.budget || filters.budget === 0;
+    const matchesDuration = trip.duration <= filters.duration || filters.duration === 0;
+    const matchesAge = trip.age <= filters.age || filters.age === 0;
+    const matchesLanguages =
+      filters.languages.length === 0 ||
+      filters.languages.every((lang) => trip.languages.includes(lang));
+
+    return matchesSearch && matchesBudget && matchesDuration && matchesAge && matchesLanguages;
+  });
+
   return (
-    <div className="space-y-10 overflow-y-auto max-h-screen">
+    <div className="space-y-10">
       <div>
         <h2 className="text-l text-gray-800 ml-8">
           Results for: <span className="text-black font-bold">{searchTerm}</span>
         </h2>
-        <p className="text-[13px] text-black-100 ml-8">Discover travel companions for your next adventure</p>
+        <p className="text-[13px] text-black-100 ml-8">
+          Discover travel companions for your next adventure
+        </p>
       </div>
 
       <Carousel title="Best Match" refObj={ref1}>
-        {bestMatchTrips.map((trip) => (
-          <TripCard key={trip.id} {...trip} />
-        ))}
-      </Carousel>
+  {filteredTrips.map((trip) => (
+    <TripCard
+      key={trip.id}
+      {...trip}
+      budget={`₹${trip.budget}K`} // convert number to string
+    />
+  ))}
+</Carousel>
 
-      <Carousel title="Featured Trip Leaders" refObj={ref2}>
-        {featuredLeadersTrips.map((trip) => (
-          <TripCard key={trip.id + "-featured"} {...trip} />
-        ))}
-      </Carousel>
+<Carousel title="Featured Trip Leaders" refObj={ref2}>
+  {filteredTrips.map((trip) => (
+    <TripCard
+      key={trip.id}
+      {...trip}
+      budget={`₹${trip.budget}K`} // convert number to string
+    />
+  ))}
+</Carousel>
 
-      <Carousel title="AI Powered Recommendations" refObj={ref3}>
-        {aiRecommendationsTrips.map((trip) => (
-          <TripCard key={trip.id + "-ai"} {...trip} />
-        ))}
-      </Carousel>
+<Carousel title="AI Powered Recommendations" refObj={ref3}>
+  {filteredTrips.map((trip) => (
+    <TripCard
+      key={trip.id}
+      {...trip}
+      budget={`₹${trip.budget}K`} // convert number to string
+    />
+  ))}
+</Carousel>
 
       <section>
-        <h3 className="text-lg font-semibold text-gray-700 mb-3 ml-8">Featured Travel Agency</h3>
+        <h3 className="text-lg font-semibold text-gray-700 mb-3 ml-8">
+          Featured Travel Agency
+        </h3>
         <AgencyCard {...featuredAgency} />
       </section>
     </div>

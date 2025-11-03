@@ -12,25 +12,35 @@ export default function ExplorePage() {
     languages: [] as string[],
   });
 
+  const [appliedFilters, setAppliedFilters] = useState(filters);
+
   const handleClearFilters = () => {
     setSearchTerm("");
     setFilters({ duration: 0, budget: 0, age: 12, languages: [] });
+    setAppliedFilters({ duration: 0, budget: 0, age: 12, languages: [] });
+  };
+
+  const handleApplyFilters = () => {
+    setAppliedFilters({ ...filters });
   };
 
   return (
-    <div className="flex h-screen">
-      {/* Left filter panel: fixed width, full height, no scroll */}
-      <div className="w-80 h-full flex-shrink-0">
+    <div className="flex gap-6 h-screen">
+      {/* Left Filter Panel */}
+      <div className="w-80 flex-shrink-0 border-r border-gray-200 h-full">
         <FilterControls
+          searchTerm={searchTerm}
+          filters={filters}
           onSearchChange={setSearchTerm}
           onFilterChange={setFilters}
           onClear={handleClearFilters}
+          onApply={handleApplyFilters} // Apply button
         />
       </div>
 
-      {/* Right content: scrollable vertically */}
-      <div className="flex-1 h-full overflow-y-auto">
-        <RightContent searchTerm={searchTerm} filters={filters} />
+      {/* Right Content */}
+      <div className="flex-1 overflow-y-auto h-full">
+        <RightContent searchTerm={searchTerm} filters={appliedFilters} />
       </div>
     </div>
   );
