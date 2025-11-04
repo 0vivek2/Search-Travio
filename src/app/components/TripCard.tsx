@@ -3,6 +3,7 @@ import React from "react";
 import { CheckBadgeIcon, ShieldCheckIcon } from "@heroicons/react/16/solid";
 import { LuScanEye } from "react-icons/lu";
 import { BsFillSuitcase2Fill } from "react-icons/bs";
+import { RiShieldCheckLine } from "react-icons/ri";
 import {
   FaCalendarAlt,
   FaMoneyBillWave,
@@ -91,7 +92,7 @@ export default function TripCard({
 
       {/* Match Badge */}
       <div className="flex items-center bg-green-500/80 px-1.5 py-[1px] rounded-md">
-        <ShieldCheckIcon className="w-3 h-3 mr-1" />
+        <RiShieldCheckLine className="w-3 h-3 mr-1" />
         <span>{matchPercent}%</span>
       </div>
     </div>
@@ -153,7 +154,7 @@ export default function TripCard({
 
         {/* Join Trip Button */}
         <button className="w-full bg-[#F76C6C] text-white text-[11px] font-semibold py-1.5 rounded-sm hover:bg-[#e45d5d] transition flex items-center justify-center gap-1">
-          <FaUserPlus className="text-white text-[12px]" />
+          <FaUserPlus className="text-white text-[18px]" />
           Join Trip
         </button>
       </div>
