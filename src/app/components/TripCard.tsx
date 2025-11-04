@@ -1,6 +1,8 @@
 "use client";
 import React from "react";
 import { CheckBadgeIcon, ShieldCheckIcon } from "@heroicons/react/16/solid";
+import { LuScanEye } from "react-icons/lu";
+import { BsFillSuitcase2Fill } from "react-icons/bs";
 import {
   FaCalendarAlt,
   FaMoneyBillWave,
@@ -107,7 +109,7 @@ export default function TripCard({
             <span className="font-medium">{from}</span>
           </div>
          
-          <div className="ml-[3px] h-3 border-l-2 border-dotted border-black"></div>
+          <div className="ml-[3px] h-2 border-l-2 border-dotted border-black"></div>
 
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-md bg-black"></span>
@@ -142,10 +144,10 @@ export default function TripCard({
         {/* Buttons */}
         <div className="flex justify-between gap-2">
           <button className="flex items-center justify-center gap-1 border border-[#EB5757] text-[#EB5757] px-2 py-1 rounded-sm text-[10px] font-medium hover:bg-[#EB5757]/10 transition w-1/2">
-            <FaEye className="text-[11px]" /> Profile
+            <LuScanEye className="text-[18px]" /> Profile
           </button>
           <button className="flex items-center justify-center gap-1 border border-[#EB5757] text-[#EB5757] px-2 py-1 rounded-sm text-[10px] font-medium hover:bg-[#EB5757]/10 transition w-1/2">
-            <FaSuitcase className="text-[11px]" /> Trip
+            <BsFillSuitcase2Fill className="text-[18px]" /> Trip
           </button>
         </div>
 

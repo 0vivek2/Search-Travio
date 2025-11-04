@@ -1,15 +1,28 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaArrowLeft, FaSearch } from "react-icons/fa";
 
 interface FilterPanelProps {
   searchTerm: string;
-  filters: { duration: number; budget: number; age: number; languages: string[] };
+  filters: {
+    duration: number;
+    budget: number;
+    age: number;
+    languages: string[];
+    dropdowns: Record<string, string>; // ✅ not optional anymore
+  };
   onSearchChange: (term: string) => void;
-  onFilterChange: (filters: { duration: number; budget: number; age: number; languages: string[] }) => void;
+  onFilterChange: (filters: {
+    duration: number;
+    budget: number;
+    age: number;
+    languages: string[];
+    dropdowns: Record<string, string>; // ✅ not optional anymore
+  }) => void;
   onClear: () => void;
-  onApply?: () => void; // Added optional prop for Apply button
+  onApply?: () => void;
 }
+
 
 export default function FilterControls({
   searchTerm,
@@ -21,17 +34,6 @@ export default function FilterControls({
 }: FilterPanelProps) {
   const [langInput, setLangInput] = useState("");
 
-  const addLanguage = () => {
-    if (langInput.trim() && !filters.languages.includes(langInput)) {
-      onFilterChange({ ...filters, languages: [...filters.languages, langInput] });
-      setLangInput("");
-    }
-  };
-
-  const removeLanguage = (lang: string) => {
-    onFilterChange({ ...filters, languages: filters.languages.filter((l) => l !== lang) });
-  };
-
   const dropdownFilters = [
     { label: "Travel Style", options: ["Luxury", "Adventure", "Budget", "Group"] },
     { label: "Interest", options: ["Beach", "Nature", "Culture", "Photography"] },
@@ -41,9 +43,36 @@ export default function FilterControls({
     { label: "Trip Type", options: ["Solo", "Couple", "Family", "Friends"] },
   ];
 
+  // Reset visual inputs when filters change
+  useEffect(() => {
+    setLangInput("");
+  }, [filters]);
+
+  const handleDropdownChange = (label: string, value: string) => {
+    const updatedDropdowns = { ...(filters.dropdowns || {}), [label]: value };
+    onFilterChange({ ...filters, dropdowns: updatedDropdowns });
+  };
+
+  const addLanguage = () => {
+    if (langInput.trim() && !filters.languages.includes(langInput)) {
+      onFilterChange({
+        ...filters,
+        languages: [...filters.languages, langInput],
+      });
+      setLangInput("");
+    }
+  };
+
+  const removeLanguage = (lang: string) => {
+    onFilterChange({
+      ...filters,
+      languages: filters.languages.filter((l) => l !== lang),
+    });
+  };
+
   return (
-    <div className="flex flex-col h-full bg-white relative">
-      {/* Scrollable Inputs / Filters */}
+    <div className="flex-1 p-4 space-y-6"> 
+      {/* Scrollable Inputs */}
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
         {/* Back Button */}
         <button className="flex items-center text-gray-700 hover:text-[#F76C6C] font-medium transition w-fit mb-2">
@@ -62,11 +91,9 @@ export default function FilterControls({
           />
         </div>
 
-        {/* Filter Header */}
+        {/* Header */}
         <div className="flex justify-between items-center">
-          <div className="flex items-center gap-2 text-black">
-            <span className="text-sm font-medium">Filter</span>
-          </div>
+          <span className="text-sm font-medium text-black">Filter</span>
           <button
             onClick={onClear}
             className="text-[#F76C6C] text-sm font-medium hover:underline"
@@ -75,24 +102,14 @@ export default function FilterControls({
           </button>
         </div>
 
-        {/* Quick Filters */}
-        <div className="flex gap-2 flex-wrap">
-          {["Local", "Nearby", "Starting Point"].map((label) => (
-            <button
-              key={label}
-              className="border border-[#F76C6C] text-[#F76C6C] px-3 py-1.5 rounded-sm text-xs hover:bg-[#F76C6C]/10 transition flex items-center gap-1"
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-
         {/* Dropdown Filters */}
         <div className="space-y-4">
           {dropdownFilters.map((filter) => (
             <div key={filter.label} className="flex flex-col space-y-1">
               <label className="text-sm font-medium text-gray-800">{filter.label}</label>
               <select
+                value={filters.dropdowns?.[filter.label] || ""}
+                onChange={(e) => handleDropdownChange(filter.label, e.target.value)}
                 className="border border-gray-300 rounded-sm p-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F76C6C]"
               >
                 <option value="">Select {filter.label}</option>
@@ -142,39 +159,118 @@ export default function FilterControls({
           </div>
         </div>
 
-        {/* Sliders */}
-        <div className="space-y-6 mt-4">
-          {[
-            { label: "Duration (0–50+ days)", min: 0, max: 50, key: "duration" },
-            { label: "Budget (0–50K)", min: 0, max: 50, key: "budget" },
-            { label: "Age Range (12–50+)", min: 12, max: 50, key: "age" },
-          ].map((slider) => (
-            <div key={slider.key} className="space-y-2">
-              <label className="text-sm font-medium text-gray-800">{slider.label}</label>
-              <input
-                type="range"
-                min={slider.min}
-                max={slider.max}
-                value={(filters as any)[slider.key]}
-                onChange={(e) =>
-                  onFilterChange({
-                    ...filters,
-                    [slider.key]: Number(e.target.value),
-                  })
-                }
-                className="w-full accent-[#F76C6C]"
-              />
-              <div className="text-sm text-gray-600 font-medium">
-                {(filters as any)[slider.key]}
-              </div>
-              <hr className="border-gray-200" />
-            </div>
-          ))}
-        </div>
+{/* Sliders (perfect fill alignment) */}
+<div className="space-y-6 mt-4">
+  {[
+    { label: "Duration (0–50+ days)", min: 0, max: 50, key: "duration" },
+    { label: "Budget (0–50K)", min: 0, max: 50, key: "budget" },
+    { label: "Age Range (12–50+)", min: 12, max: 50, key: "age" },
+  ].map((slider) => {
+    const value = (filters as any)[slider.key];
+    const percent =
+      ((value - slider.min) * 100) / (slider.max - slider.min);
+
+    // ✅ Slight extension past 100% to make peach reach thumb
+    const adjustedPercent = Math.min(percent + 1.5, 100);
+
+    return (
+      <div key={slider.key} className="space-y-2">
+        <label className="text-sm font-medium text-gray-800">{slider.label}</label>
+
+        <input
+          type="range"
+          min={slider.min}
+          max={slider.max}
+          value={value}
+          onChange={(e) =>
+            onFilterChange({
+              ...filters,
+              [slider.key]: Number(e.target.value),
+            })
+          }
+          className="w-full appearance-none custom-slider cursor-pointer"
+          style={
+            {
+              "--percent": `${adjustedPercent}%`,
+            } as React.CSSProperties
+          }
+        />
+
+        <div className="text-sm text-gray-600 font-medium">{value}</div>
+        <hr className="border-gray-200" />
+      </div>
+    );
+  })}
+</div>
+
+<style jsx>{`
+  .custom-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 8px;
+    width: 100%;
+    border-radius: 9999px;
+    outline: none;
+    background: linear-gradient(
+      to right,
+      #f76c6c 0%,
+      #f76c6c var(--percent),
+      #feecec var(--percent),
+      #feecec 100%
+    );
+    transition: background 0.1s ease;
+  }
+
+  .custom-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background-color: #f76c6c;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    margin-top: -1px;
+    box-shadow: 0 0 6px #f76c6c66;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+
+  .custom-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+  }
+
+  /* Firefox */
+  .custom-slider::-moz-range-track {
+    background: #feecec;
+    height: 8px;
+    border-radius: 9999px;
+  }
+  .custom-slider::-moz-range-progress {
+    background: #f76c6c;
+    height: 8px;
+    border-radius: 9999px;
+  }
+  .custom-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background-color: #f76c6c;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 6px #f76c6c66;
+    transition: transform 0.15s ease;
+  }
+  .custom-slider::-moz-range-thumb:hover {
+    transform: scale(1.1);
+  }
+`}</style>
+
+
+
+
       </div>
 
-      {/* Apply Button fixed at bottom */}
-      <div className="p-4 border-t border-gray-200 flex-shrink-0 bg-white">
+      {/* Apply Button */}
+      <div className="p-4 border-t border-gray-200 bg-white">
         <button
           onClick={onApply}
           className="w-full bg-[#F76C6C] text-white py-2 rounded-sm font-semibold hover:bg-[#e45d5d] transition"

@@ -15,8 +15,8 @@ interface Trip {
   from: string;
   to: string;
   dateRange: string;
-  budget: number; // use number for filtering
-  duration: number; // number of days
+  budget: number;
+  duration: number;
   interests: string[];
   languages: string[];
 }
@@ -28,10 +28,15 @@ interface RightContentProps {
     budget: number;
     age: number;
     languages: string[];
+    dropdowns?: Record<string, string>;
   };
 }
 
 export default function RightContent({ searchTerm, filters }: RightContentProps) {
+  const ref1 = useRef<HTMLDivElement>(null!);
+  const ref2 = useRef<HTMLDivElement>(null!);
+  const ref3 = useRef<HTMLDivElement>(null!);
+
   const mockTrips: Trip[] = [
     {
       id: 1,
@@ -96,18 +101,51 @@ export default function RightContent({ searchTerm, filters }: RightContentProps)
     badges: ["Adventure Travel", "Cultural Tours", "Sustainable Tours"],
   };
 
-  // ✅ Refs for carousel
-  const ref1 = useRef<HTMLDivElement | null>(null);
-  const ref2 = useRef<HTMLDivElement | null>(null);
-  const ref3 = useRef<HTMLDivElement | null>(null);
+  // ✅ Filtering logic (includes dropdowns)
+  const normalizedSearch = searchTerm.trim().toLowerCase();
+
+  const filteredTrips = mockTrips.filter((trip) => {
+    const matchesSearch =
+      normalizedSearch === "" ||
+      trip.from.toLowerCase().includes(normalizedSearch) ||
+      trip.to.toLowerCase().includes(normalizedSearch) ||
+      trip.name.toLowerCase().includes(normalizedSearch);
+
+    const matchesBudget = filters.budget === 0 || trip.budget <= filters.budget;
+    const matchesDuration = filters.duration === 0 || trip.duration <= filters.duration;
+    const matchesAge = filters.age === 0 || trip.age <= filters.age;
+    const matchesLanguages =
+      filters.languages.length === 0 ||
+      filters.languages.every((lang) => trip.languages.includes(lang));
+
+    // ✅ Dropdown filters
+    const dropdowns = filters.dropdowns || {};
+    const interest = dropdowns["Interest"];
+    const travelStyle = dropdowns["Travel Style"];
+    const tripType = dropdowns["Trip Type"];
+
+    const matchesInterest = !interest || trip.interests.includes(interest);
+    const matchesStyle = !travelStyle || ["Luxury", "Adventure", "Budget", "Group"].includes(travelStyle);
+    const matchesTripType = !tripType || ["Solo", "Couple", "Family", "Friends"].includes(tripType);
+
+    return (
+      matchesSearch &&
+      matchesBudget &&
+      matchesDuration &&
+      matchesAge &&
+      matchesLanguages &&
+      matchesInterest &&
+      matchesStyle &&
+      matchesTripType
+    );
+  });
 
   const handleScroll = (
-    ref: React.RefObject<HTMLDivElement | null>,
+    ref: React.RefObject<HTMLDivElement>,
     direction: "left" | "right"
   ) => {
     if (!ref.current) return;
-    const amount = direction === "left" ? -300 : 300;
-    ref.current.scrollBy({ left: amount, behavior: "smooth" });
+    ref.current.scrollBy({ left: direction === "left" ? -300 : 300, behavior: "smooth" });
   };
 
   const Carousel = ({
@@ -116,7 +154,7 @@ export default function RightContent({ searchTerm, filters }: RightContentProps)
     children,
   }: {
     title: string;
-    refObj: React.RefObject<HTMLDivElement | null>;
+    refObj: React.RefObject<HTMLDivElement>;
     children: React.ReactNode;
   }) => (
     <section className="relative">
@@ -128,7 +166,6 @@ export default function RightContent({ searchTerm, filters }: RightContentProps)
         >
           <FaChevronLeft className="text-black w-4 h-4" />
         </button>
-
         <div
           ref={refObj}
           className="flex gap-4 overflow-x-auto scroll-smooth px-8"
@@ -141,7 +178,6 @@ export default function RightContent({ searchTerm, filters }: RightContentProps)
           `}</style>
           {children}
         </div>
-
         <button
           onClick={() => handleScroll(refObj, "right")}
           className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-white shadow-md hover:bg-[#F76C6C]/10 transition"
@@ -152,25 +188,29 @@ export default function RightContent({ searchTerm, filters }: RightContentProps)
     </section>
   );
 
-  // ✅ Apply filters to trips
-  const filteredTrips = mockTrips.filter((trip) => {
-    const matchesSearch =
-      searchTerm === "" || trip.from.toLowerCase().includes(searchTerm.toLowerCase()) || trip.to.toLowerCase().includes(searchTerm.toLowerCase());
+  const renderTrips = (refObj: React.RefObject<HTMLDivElement>) => {
+    if (filteredTrips.length === 0) {
+      return (
+        <div className="flex flex-col items-center justify-center text-center text-gray-500 w-full py-10">
+          <p className="text-sm font-medium text-gray-600">
+            No trips found matching your filters.
+          </p>
+          <p className="text-xs text-gray-400 mt-1">
+            Try adjusting your filters or search term.
+          </p>
+        </div>
+      );
+    }
 
-    const matchesBudget = trip.budget <= filters.budget || filters.budget === 0;
-    const matchesDuration = trip.duration <= filters.duration || filters.duration === 0;
-    const matchesAge = trip.age <= filters.age || filters.age === 0;
-    const matchesLanguages =
-      filters.languages.length === 0 ||
-      filters.languages.every((lang) => trip.languages.includes(lang));
-
-    return matchesSearch && matchesBudget && matchesDuration && matchesAge && matchesLanguages;
-  });
+    return filteredTrips.map((trip) => (
+      <TripCard key={trip.id} {...trip} budget={`₹${trip.budget}K`} />
+    ));
+  };
 
   return (
     <div className="space-y-10">
       <div>
-        <h2 className="text-l text-gray-800 ml-8">
+        <h2 className="text-l text-gray-800 ml-8 mt-8">
           Results for: <span className="text-black font-bold">{searchTerm}</span>
         </h2>
         <p className="text-[13px] text-black-100 ml-8">
@@ -179,34 +219,16 @@ export default function RightContent({ searchTerm, filters }: RightContentProps)
       </div>
 
       <Carousel title="Best Match" refObj={ref1}>
-  {filteredTrips.map((trip) => (
-    <TripCard
-      key={trip.id}
-      {...trip}
-      budget={`₹${trip.budget}K`} // convert number to string
-    />
-  ))}
-</Carousel>
+        {renderTrips(ref1)}
+      </Carousel>
 
-<Carousel title="Featured Trip Leaders" refObj={ref2}>
-  {filteredTrips.map((trip) => (
-    <TripCard
-      key={trip.id}
-      {...trip}
-      budget={`₹${trip.budget}K`} // convert number to string
-    />
-  ))}
-</Carousel>
+      <Carousel title="Featured Trip Leaders" refObj={ref2}>
+        {renderTrips(ref2)}
+      </Carousel>
 
-<Carousel title="AI Powered Recommendations" refObj={ref3}>
-  {filteredTrips.map((trip) => (
-    <TripCard
-      key={trip.id}
-      {...trip}
-      budget={`₹${trip.budget}K`} // convert number to string
-    />
-  ))}
-</Carousel>
+      <Carousel title="AI Powered Recommendations" refObj={ref3}>
+        {renderTrips(ref3)}
+      </Carousel>
 
       <section>
         <h3 className="text-lg font-semibold text-gray-700 mb-3 ml-8">
